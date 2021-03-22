@@ -24,11 +24,10 @@ class Stage:
     - a tuple containing the storage capacity and how it is composed
     - the number of hour per week lost due to changeover (lost_capacity)"""
 
-    def __init__(self, production, storage_capacity, lost_capacity, inventory):
+    def __init__(self, production, storage_capacity, lost_capacity):
         self.production = production
         self.storage_capacity = storage_capacity
         self.lost_capacity = lost_capacity
-        self.inventory = inventory
 
 
 ######################################
@@ -50,7 +49,7 @@ tank6_stage2 = Silo(2000, grade1)
 
 #--- Stages ---#
 stage1 = Stage((typeA, typeB), (silo1_stage1, silo2_stage1,
-                                silo3_stage1), 8, (2513, 5973))
+                                silo3_stage1), 8)
 stage2 = Stage((grade1, grade2, grade3), (tank1_stage2, tank2_stage2,
                                           tank3_stage2, tank4_stage2, tank5_stage2, tank6_stage2),
-               20, (5602, 1203, 4118))
+               20)
