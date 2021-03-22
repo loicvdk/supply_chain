@@ -35,21 +35,18 @@ class Stage:
 ######################################
 
 #--- Silos for stage1 ---#
-silo1_stage1 = Silo(6000, typeA)
-silo2_stage1 = Silo(6000, typeA)
-silo3_stage1 = Silo(6000, typeB)
+storage_type_A = Silo(12000, typeA)
+storage_type_B = Silo(6000, typeB)
 
 #--- Tanks for stage 2 ---#
-tank1_stage2 = Silo(4000, grade1)
-tank2_stage2 = Silo(4000, grade2)
-tank3_stage2 = Silo(4000, grade3)
-tank4_stage2 = Silo(2000, grade3)
-tank5_stage2 = Silo(2000, grade1)
-tank6_stage2 = Silo(2000, grade1)
+storage_grade1 = Silo(8000, grade1)
+storage_grade2 = Silo(4000, grade2)
+storage_grade3 = Silo(6000, grade3)
+
 
 #--- Stages ---#
-stage1 = Stage((typeA, typeB), (silo1_stage1, silo2_stage1,
-                                silo3_stage1), 8)
-stage2 = Stage((grade1, grade2, grade3), (tank1_stage2, tank2_stage2,
-                                          tank3_stage2, tank4_stage2, tank5_stage2, tank6_stage2),
+stage1 = Stage((typeA, typeB), (storage_type_A, storage_type_B),
+               8)
+stage2 = Stage((grade1, grade2, grade3), (storage_grade1, storage_grade2,
+                                          storage_grade3),
                20)

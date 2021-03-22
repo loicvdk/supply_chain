@@ -11,6 +11,8 @@ from stages import stage1, stage2
 
 T = 20  # days
 products = [typeA, typeB, grade1, grade2, grade3]
+# products_stage1 = [typeA, typeB]
+# products_stage2 = [grade1, grade2, grade3]
 stages = [stage1, stage2]
 
 
@@ -31,7 +33,7 @@ if __name__ == "__main__":
 
     inventory = plp.LpVariable.dicts(
         'inventory',
-        ((p, t) for p in products for t in range(T)),
+        ((p, s, t) for p in products for s in stages for t in range(T)),
         lowBound=0, cat='Continuous'
     )
 
@@ -55,4 +57,38 @@ if __name__ == "__main__":
     # Inventory for product p in time 0 = p.inventory
     # since at t=0 no production yet and no demand yet
     for p in products:
-        prob += inventory[p, 0] == p.inventory
+        if p == typeA or p == typeB:
+            prob += inventory[p, 0, 0] == p.inventory
+        else:
+            prob += inventory[p, 1, 0] == p.inventory
+
+    # NEED TO DEFINE THE DEMAND FOR GRADE 1 2 3
+    for p in products:
+        for t in range(1, T):
+            if p == typeA or p == typeB:
+                if p == typeA:
+                    prob += inventory[p, 0, t] == inventory[p, 0, t-1] + production[p,
+                                                                                    0, t] - 0.9 * (production[grade1, 1, t] + production[grade2, 1, t])
+                else:
+                    prob += inventory[p, 0, t] == inventory[p, 0, t-1] + \
+                        production[p, 0, t] - 0.9 * production[grade3, 1, t]
+            else:
+                prob += inventory[p, 1, t] == inventory[p, 1,
+                                                        t-1] + production[p, 1, t] - demand[p][t]
+
+    for s in stages:
+        for p in product:
+            for t in range(T):
+                prob += inventory[p, s, t] <= x[0] for x in s.storage_capacity if x[1] == p
+
+    for s in stages:
+        for t in range(T):
+            binary = 0
+            for p in products:
+                binary += is_produced[p, s, t]
+            prob += binary <= 1
+
+    for p in products:
+        for s in stages:
+            for t in range(T):
+                prob += None
