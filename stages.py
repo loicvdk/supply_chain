@@ -13,7 +13,7 @@ class Silo:
     - capacity
     Then those silos will be assigned to a stage"""
 
-    def __init__(self):
+    def __init__(self, capacity, grade_stored):
         self.capacity = capacity
         self.grade_stored = grade_stored
 

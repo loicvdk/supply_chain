@@ -15,6 +15,11 @@ products = [typeA, typeB, grade1, grade2, grade3]
 # products_stage2 = [grade1, grade2, grade3]
 stages = [stage1, stage2]
 
+demand = {
+    grade1: [1000 for x in range(T)],
+    grade2: [1000 for x in range(T)],
+    grade3: [1000 for x in range(T)]
+}
 
 if __name__ == "__main__":
     #############################
@@ -43,7 +48,7 @@ if __name__ == "__main__":
         cat=plp.LpBinary
     )
 
-    production_costs = plp.LpVariable.dicts('production_cost', lowBound=0)
+    production_costs = plp.LpVariable('production_cost', lowBound=0)
     holding_costs = plp.LpVariable('holding_cost', lowBound=0)
 
     ########################################
@@ -58,28 +63,30 @@ if __name__ == "__main__":
     # since at t=0 no production yet and no demand yet
     for p in products:
         if p == typeA or p == typeB:
-            prob += inventory[p, 0, 0] == p.inventory
+            prob += inventory[p, stages[0], 0] == p.inventory
         else:
-            prob += inventory[p, 1, 0] == p.inventory
+            prob += inventory[p, stages[1], 0] == p.inventory
 
     # NEED TO DEFINE THE DEMAND FOR GRADE 1 2 3
     for p in products:
         for t in range(1, T):
             if p == typeA or p == typeB:
                 if p == typeA:
-                    prob += inventory[p, 0, t] == inventory[p, 0, t-1] + production[p,
-                                                                                    0, t] - 0.9 * (production[grade1, 1, t] + production[grade2, 1, t])
+                    prob += inventory[p, stages[0], t] == inventory[p, stages[0], t-1] + production[p,
+                                                                                                    stages[0], t] - 0.9 * (production[grade1, stages[1], t] + production[grade2, stages[1], t])
                 else:
-                    prob += inventory[p, 0, t] == inventory[p, 0, t-1] + \
-                        production[p, 0, t] - 0.9 * production[grade3, 1, t]
+                    prob += inventory[p, stages[0], t] == inventory[p, stages[0], t-1] + \
+                        production[p, stages[0], t] - 0.9 * \
+                        production[grade3, stages[1], t]
             else:
-                prob += inventory[p, 1, t] == inventory[p, 1,
-                                                        t-1] + production[p, 1, t] - demand[p][t]
+                prob += inventory[p, stages[1], t] == inventory[p, stages[1],
+                                                                t-1] + production[p, stages[1], t] - demand[p][t]
 
     for s in stages:
-        for p in product:
+        for p in products:
             for t in range(T):
-                prob += inventory[p, s, t] <= x[0] for x in s.storage_capacity if x[1] == p
+                prob += inventory[p, s, t] <= [x.capacity if x.grade_stored ==
+                                               p else print('') for x in s.storage_capacity]
 
     for s in stages:
         for t in range(T):
@@ -91,4 +98,23 @@ if __name__ == "__main__":
     for p in products:
         for s in stages:
             for t in range(T):
-                prob += None
+                prob += production[p, s,
+                                   t] <= (24 - s.lost_capacity) * p.production_rate
+
+    for t in range(T):
+        prob += production[grade1, stages[1], t] == 0.9 * \
+            inventory[typeA, stages[0], t]
+
+    for t in range(T):
+        prob += production[grade2, stages[1], t] == 0.9 * \
+            inventory[typeA, stages[0], t]
+
+    for t in range(T):
+        prob += production[grade3, stages[1], t] == 0.9 * \
+            inventory[typeB, stages[0], t]
+
+    prob += plp.lpSum([p.variable_costs*production[p, s, t]
+                       for p in products for s in stages for t in range(T)]) == production_costs
+
+    prob.solve()
+    print(production_costs.varValue, holding_costs.varValue)
